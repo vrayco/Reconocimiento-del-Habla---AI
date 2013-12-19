@@ -21,36 +21,53 @@ namespace Reconocimiento_de_Voz___AI
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            // Create a new SpeechRecognitionEngine instance.
+            // Crear una instancia SpeechRecognitionEngine
             sre = new SpeechRecognitionEngine(new System.Globalization.CultureInfo("es-ES"));
             
-              // Create a simple grammar that recognizes “red”, “green”, or “blue”.
-              Choices colors = new Choices();
-              colors.Add("Apagar sistema");
-              colors.Add("Bajar volumen");
-              colors.Add("Subir volumen");
-              colors.Add("Listar home");
+            // Crear una estructura de datos con las frases a reconocer
+            Choices instrucciones = new Choices();
+            instrucciones.Add("Apagar sistema");
+            instrucciones.Add("Bajar volumen");
+            instrucciones.Add("Subir volumen");
 
             GrammarBuilder gb = new GrammarBuilder();
-             gb.Append(colors);
+            gb.Append(instrucciones);
 
-           // Create the actual Grammar instance, and then load it into the speech recognizer.
-           Grammar g = new Grammar(gb);
-          sre.LoadGrammar(g);
+            // Crear la gramatica y la carga en el speech recognizer
+            Grammar g = new Grammar(gb);
+            sre.LoadGrammar(g);
 
-      // Register a handler for the SpeechRecognized event.
-      sre.SpeechRecognized += new EventHandler<SpeechRecognizedEventArgs>(sre_SpeechRecognized);
-      sre.SetInputToDefaultAudioDevice();
-      sre.RecognizeAsync(RecognizeMode.Multiple);
-    }
+           // Registro la función a ejecutar en la captura
+           sre.SpeechRecognized += new EventHandler<SpeechRecognizedEventArgs>(sre_SpeechRecognized);
+           sre.SetInputToDefaultAudioDevice();
+           sre.RecognizeAsync(RecognizeMode.Multiple);
+       }
 
-    // Simple handler for the SpeechRecognized event.
     void sre_SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
     {
-      //label1.Text += e.Result.Text;
-      string result = ExecuteCommand("dir");
-      //MessageBox.Show(result);
-      label_out.Text += e.Result.Text+"\n";
+        string comando = "";
+        switch (e.Result.Text)
+        {
+            case "Apagar sistema":
+                comando = "shutdown /s /t 0";
+                break;
+            case "Bajar volumen":
+                comando = "nircmd.exe mutesysvolume 1";
+                break;
+            case "Subir volumen":
+                comando = "nircmd.exe mutesysvolume 0";
+                break;
+            case "Listar home":
+                comando = "";
+                break;
+            default:
+                label_out.Text += "No entiendo: :"+ e.Result.Text + "\n";
+                break;
+        }
+        if(comando != "") {
+            string result = ExecuteCommand(comando);
+            label_out.Text += "Orden ejecutada: " + e.Result.Text + "\n";
+        }
     }
 
     SpeechRecognitionEngine sre;
